@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        header {
+            background-color: #1DB954;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #181818;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        th {
+            background-color: #282828;
+            color: #1DB954;
+        }
+
+        tr:hover {
+            background-color: #333;
+        }
+
+        .song-name {
+            color: #1DB954;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: #1DB954;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #1AA34A;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #1DB954;
+            margin-top: 30px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #updateModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+        }
+    </style>
+
+
+
+<div class="container">
+    <!-- <h2>Top Songs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Song Name</th>
+                <th>Artist</th>
+
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="songTableBody">
+            {% for song in content %}
+            <tr id="song-{{ song.song_id }}">
+                <td>{{ song.song_id }}</td>
+                <td class="song-name">{{ song.song_name }}</td>
+                <td>{{ song.artist }}</td>
+
+                <td class="action-buttons">
+                    <button class="button" onclick="confirmDelete({{ song.song_id }})">Delete</button>
+                    <button class="button" onclick="showUpdateForm({{ song.song_id }}, '{{ song.song_name }}', '{{ song.artist }}', {{ song.streamed_hours }})">Update</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> -->
+    <h2>Top Songs</h2>
+
+    <!-- Form to select month, year, and search -->
+    <form method="POST" action="/">
+        <label for="month">Select Month:</label>
+        <select name="month" id="month">
+            <option value="1" {% if current_month == 1 %}selected{% endif %}>January</option>
+            <option value="2" {% if current_month == 2 %}selected{% endif %}>February</option>
+            <option value="3" {% if current_month == 3 %}selected{% endif %}>March</option>
+            <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+            <option value="5" {% if current_month == 5 %}selected{% endif %}>May</option>
+            <option value="6" {% if current_month == 6 %}selected{% endif %}>June</option>
+            <option value="7" {% if current_month == 7 %}selected{% endif %}>July</option>
+            <option value="8" {% if current_month == 8 %}selected{% endif %}>August</option>
+            <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+            <option value="10" {% if current_month == 10 %}selected{% endif %}>October</option>
+            <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+            <option value="12" {% if current_month == 12 %}selected{% endif %}>December</option>
+        </select>
+
+        <label for="year">Select Year:</label>
+        <input type="number" name="year" id="year" value="{{ current_year }}" required>
+
+        <label for="search">Search by Song Name or Artist:</label>
+        <input type="text" name="search" id="search" placeholder="Enter song name or artist" value="{{ request.form.get('search', '') }}">
+
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Table to display the song data -->
+    {% if streamed_data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Song Name</th>
+                    <th>Artist</th>
+                    <th>Streamed Hours</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song_name, artist, streamed_hours in streamed_data %}
+                    <tr>
+                        <td>{{ song_name }}</td>
+                        <td>{{ artist }}</td>
+                        <td>{{ streamed_hours }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No data available for the selected month, year, or search query.</p>
+    {% endif %}
+</div>
+
+<!-- Update Song Modal -->
+<div id="updateModal">
+    <div class="modal-content">
+        <h3>Update Song</h3>
+        <form id="updateForm">
+            <input type="hidden" id="updateSongId">
+            <label for="songName">Song Name</label>
+            <input type="text" id="songName" required style="width: 100%; padding: 10px; margin-bottom: 10px; background-color: #222; color: #fff; border: none;">
+
+            <label for="artist">Artist</label>
+            <input type="text" id="artist" required style="width: 100%; padding: 10px; margin-bottom: 10px; background-color: #222; color: #fff; border: none;">
+
+            <label for="streamedHours">Streamed Hours</label>
+            <input type="number" id="streamedHours" required style="width: 100%; padding: 10px; margin-bottom: 10px; background-color: #222; color: #fff; border: none;">
+
+            <button type="submit" class="button" style="width: 100%;">Update Song</button>
+            <button type="button" class="button" style="width: 100%; background-color: #f44336; margin-top: 10px;" onclick="closeUpdateForm()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(song_id) {
+        const confirmation = confirm("Are you sure you want to delete this song?");
+        if (confirmation) {
+            fetch(`/delete/${song_id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.message === 'song deleted successfully') {
+                    document.getElementById(`song-${song_id}`).remove(); // Dynamically remove song row
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+
+    function showUpdateForm(song_id, song_name, artist, streamed_hours) {
+        document.getElementById('updateSongId').value = song_id;
+        document.getElementById('songName').value = song_name;
+        document.getElementById('artist').value = artist;
+        document.getElementById('streamedHours').value = streamed_hours;
+
+        document.getElementById('updateModal').style.display = 'flex';
+    }
+
+    function closeUpdateForm() {
+        document.getElementById('updateModal').style.display = 'none';
+    }
+
+    document.getElementById('updateForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const song_id = document.getElementById('updateSongId').value;
+        const song_name = document.getElementById('songName').value;
+        const artist = document.getElementById('artist').value;
+        const streamed_hours = document.getElementById('streamedHours').value;
+
+        fetch(`/update/${song_id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                song_name: song_name,
+                artist: artist,
+                streamed_hours: streamed_hours
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.message === 'song updated successfully') {
+                // Update the song information on the table dynamically
+                const songRow = document.getElementById(`song-${song_id}`);
+                songRow.querySelector('.song-name').textContent = song_name;
+                songRow.querySelector('td:nth-child(3)').textContent = artist;
+                songRow.querySelector('td:nth-child(4)').textContent = streamed_hours;
+
+                closeUpdateForm(); // Close modal
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+
+{% endblock %}

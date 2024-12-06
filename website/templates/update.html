@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Song</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Update Song</h1>
+        <form method="POST">
+            <label for="song_name">Song Name</label>
+            <input type="text" id="song_name" name="song_name" value="{{ song.song_name }}" required>
+
+            <label for="artist">Artist</label>
+            <input type="text" id="artist" name="artist" value="{{ song.artist }}" required>
+
+            <label for="streamed_hours">Streamed Hours</label>
+            <input type="number" id="streamed_hours" name="streamed_hours" value="{{ song.streamed_hours }}" required>
+
+            <button type="submit">Update Song</button>
+        </form>
+    </div>
+</body>
+</html>

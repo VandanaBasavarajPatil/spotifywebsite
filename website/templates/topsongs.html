@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Topsongs{% endblock %}
+
+{% block content %}
+
+    <h2>Song Information Form</h2>
+    <form action="/submit" method="POST">
+
+        <label for="song_id">Song ID:</label>
+        <input type="number" id="song_id" name="song_id" placeholder="Enter song ID" min="0" required>
+
+        <label for="song_name">Song Name:</label>
+        <input type="text" id="song_name" name="song_name" placeholder="Enter song name" required>
+
+        <label for="artist">Artist:</label>
+        <input type="text" id="artist" name="artist" placeholder="Enter artist name" required>
+
+        <label for="streamed_hours">Streamed Hours:</label>
+        <input type="number" id="streamed_hours" name="streamed_hours" placeholder="Enter streamed hours" min="0" required>
+
+        <button type="submit">Submit</button>
+    </form>
+
+{% endblock %}

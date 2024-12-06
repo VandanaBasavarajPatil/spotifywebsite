@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        header {
+            background-color: #1DB954;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #181818;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        th {
+            background-color: #282828;
+            color: #1DB954;
+        }
+
+        tr:hover {
+            background-color: #333;
+        }
+
+        .song-name {
+            color: #1DB954;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: #1DB954;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #1AA34A;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #1DB954;
+            margin-top: 30px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #updateModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #statsModal {
+            display: none; /* Initially hidden */
+            position: fixed; /* Fixed positioning relative to the viewport */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            justify-content: center; /* Center the modal horizontally */
+            align-items: center; /* Center the modal vertically */
+            z-index: 1000; /* Make sure it appears above other content */
+        }
+
+
+
+        .modal-content {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+        }
+    </style>
+
+<header>
+    <p>Add Songs & Statistics</p>
+</header>
+
+<div class="container">
+    <!-- Update Song Modal -->
+
+    <div class="modal-content">
+        <form action="/submit" method="POST">
+            <div style="margin-bottom: 10px;">
+                <label for="song_name" style="display: inline-block; width: 120px;">Name:</label>
+                <input type="text" id="song_name" name="song_name" placeholder="Enter song name" required style="display: inline-block; width: calc(100% - 130px);">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label for="artist" style="display: inline-block; width: 120px;">Artist:</label>
+                <input type="text" id="artist" name="artist" placeholder="Enter artist name" required style="display: inline-block; width: calc(100% - 130px);">
+            </div>
+
+            <button type="submit" style="margin-top: 10px;">Submit</button>
+        </form>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Song Id</th>
+                <th>Song Name</th>
+                <th>Artist</th>
+                <!-- <th>Streamed Hours</th> -->
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="songTableBody">
+            {% for song in content %}
+            <tr id="song-{{ song.song_id }}">
+                <td>{{ song.song_id }}</td>
+                <td class="song-name">{{ song.song_name }}</td>
+                <td>{{ song.artist }}</td>
+                <!-- <td>{{ song.streamed_hours }}</td> -->
+                <td class="action-buttons">
+                    <button class="button" onclick="showModal({{ song.song_id }})">Edit Statitics</button>
+                    <button class="button" onclick="viewStats({{ song.song_id }})">View Stats</button> <!-- View Stats button -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- View Stats Modal -->
+<!-- Stats Modal -->
+<div id="statsModal">
+    <div class="modal-content">
+        <h3>Song Stats</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Streamed Hours</th>
+                </tr>
+            </thead>
+            <tbody id="statsList">
+                <!-- Stats rows will be populated here -->
+            </tbody>
+        </table>
+        <button onclick="closeStatsModal()" style="margin-top: 15px; width: 100%;">Close</button>
+    </div>
+</div>
+
+
+
+<!-- Update Song Modal -->
+<div id="updateModal">
+    <div class="modal-content">
+        <h3>Add Statitics</h3>
+        <form id="updateForm">
+            <input type="hidden" id="updateSongId">
+            <label for="year">Enter Year</label>
+            <input type="number" id="year" required style="width: 100%; padding: 10px; margin-bottom: 10px; background-color: #222; color: #fff; border: none;">
+
+            <label for="month">Select Month</label>
+
+            <select class="form-select" id="month" name="month" required>
+                <option value="" disabled selected>Select a month</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </br>
+            <label for="streamedHours">Streamed Hours</label>
+            <input type="number" id="streamedHours" required style="width: 100%; padding: 10px; margin-bottom: 10px; background-color: #222; color: #fff; border: none;">
+
+            <button type="submit" class="button" style="width: 100%;">Update Song</button>
+            <button type="button" class="button" style="width: 100%; background-color: #f44336; margin-top: 10px;" onclick="closeUpdateForm()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showModal(song_id) {
+        document.getElementById('updateSongId').value = song_id;
+        document.getElementById('updateModal').style.display = 'flex';
+    }
+        // Function to close the modal
+    function closeUpdateForm() {
+        document.getElementById('updateModal').style.display = 'none';
+    }
+
+    // Handling the form submission to call the API
+    document.getElementById('updateForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent the default form submission
+
+        // Capture the data from the form fields
+        const songId = document.getElementById('updateSongId').value;
+        const year = document.getElementById('year').value;
+        const month = document.getElementById('month').value;
+        const streamedHours = document.getElementById('streamedHours').value;
+
+        // Prepare the data to be sent to the server
+        const data = {
+            song_id: songId,
+            year: year,
+            month: month,
+            streamed_hours: streamedHours
+        };
+
+        // Make the API call using fetch
+        fetch('/api/add_song_stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Statistics added successfully!');
+                closeUpdateForm();  // Close the modal after success
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the data.');
+        });
+    });
+
+
+// Function to show the stats modal and populate data with multiple records
+function viewStats(song_id) {
+    // Fetch song stats from the server
+    fetch(`/api/get_song_stats/${song_id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const statsListContainer = document.getElementById('statsList');
+            statsListContainer.innerHTML = ''; // Clear any existing content
+
+            // Check if there are stats to display
+            if (data.stats.length > 0) {
+                // Loop through the stats and create rows
+                data.stats.forEach(stat => {
+                    const row = document.createElement('tr');
+
+                    // Create cells for year, month, and streamed hours
+                    const yearCell = document.createElement('td');
+                    yearCell.textContent = stat.year;
+                    row.appendChild(yearCell);
+
+                    const monthCell = document.createElement('td');
+                    monthCell.textContent = getMonthName(stat.month);  // Convert month number to name
+                    row.appendChild(monthCell);
+
+                    const streamedHoursCell = document.createElement('td');
+                    streamedHoursCell.textContent = stat.streamed_hours;
+                    row.appendChild(streamedHoursCell);
+
+                    // Append the row to the table body
+                    statsListContainer.appendChild(row);
+                });
+            } else {
+                statsListContainer.innerHTML = '<tr><td colspan="3">No stats found for this song.</td></tr>';
+            }
+
+            // Show the modal
+            document.getElementById('statsModal').style.display = 'flex';
+        } else {
+            alert('No stats found for this song');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while fetching the statistics.');
+    });
+}
+
+// Utility function to get the full month name
+function getMonthName(month) {
+    const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+}
+
+// Function to close the stats modal
+function closeStatsModal() {
+    document.getElementById('statsModal').style.display = 'none';
+}
+
+
+</script>
+
+<footer>
+    <p>&copy; 2024 Music Player. All Rights Reserved.</p>
+</footer>
+
+{% endblock %}
